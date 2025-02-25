@@ -17,4 +17,4 @@ Save your notes easyli and fast in different colors) :)
 1. Клонируйте репозиторий:
 
 ```bash
-git clone https://github.com/otabeknortojiyev/DictionaryApp.git
+git clone https://github.com/otabeknortojiyev/NOTEJON.git
