@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             NOTEJONTheme {
-                Navigator(screen = HomeScreen, onBackPressed = {
+                Navigator(screen = HomeScreen(), onBackPressed = {
                     true
                 }) { navigator ->
                     LaunchedEffect(key1 = navigator) {

@@ -23,7 +23,7 @@ class NoteViewModel @Inject constructor(
     private val repository: NoteRepository,
 ) : ViewModel(), NoteContract.ViewModel {
 
-    override fun onEventDispatcher(intent: NoteContract.Intent) = intent {
+    override fun onEvent(intent: NoteContract.Intent) = intent {
         when (intent) {
             NoteContract.Intent.Back -> {
                 direction.back()

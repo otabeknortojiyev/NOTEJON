@@ -7,7 +7,7 @@ import uz.gita.otabek.notejon.data.model.NoteData
 interface NoteContract {
 
     interface ViewModel : ContainerHost<UiState, SideEffect> {
-        fun onEventDispatcher(intent: Intent)
+        fun onEvent(intent: Intent): Job
     }
 
     data class UiState(

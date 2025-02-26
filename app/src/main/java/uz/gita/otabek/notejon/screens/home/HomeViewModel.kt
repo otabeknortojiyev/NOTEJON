@@ -12,7 +12,7 @@ class HomeViewModel @Inject constructor(
     private val direction: HomeContract.Direction, private val repository: NoteRepository,
 ) : ViewModel(), HomeContract.ViewModel {
 
-    override fun onEventDispatcher(intent: HomeContract.Intent) = intent {
+    override fun onEvent(intent: HomeContract.Intent) = intent {
         when (intent) {
             HomeContract.Intent.Init -> {
                 reduce { state.copy(isLoading = true, isByTags = false, isFavorite = false, isAll = true) }

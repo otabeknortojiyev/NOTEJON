@@ -1,33 +1,28 @@
 package uz.gita.otabek.notejon.screens.home
 
+//noinspection UsingMaterialAndMaterial3Libraries
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.TextButton
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -50,7 +45,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -60,377 +54,246 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.compose.collectAsState
 import uz.gita.otabek.notejon.R
-import uz.gita.otabek.notejon.data.model.NoteData
+import uz.gita.otabek.notejon.screens.home.items.AppInfoDialog
+import uz.gita.otabek.notejon.screens.home.items.NoteItem
 import uz.gita.otabek.notejon.ui.theme.MainGray
-import uz.gita.otabek.notejon.utils.longToDateString
 
 
 class HomeScreen : Screen {
-    @Composable
-    override fun Content() {
-        val viewModel: HomeContract.ViewModel = getViewModel<HomeViewModel>()
-        val uiState = viewModel.collectAsState()
-        HomeScreenContent(uiState, viewModel::onEventDispatcher)
-    }
+  @Composable
+  override fun Content() {
+    val viewModel: HomeContract.ViewModel = getViewModel<HomeViewModel>()
+    val uiState = viewModel.collectAsState()
+    Content(uiState, viewModel::onEvent)
+  }
 }
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @SuppressLint("ResourceAsColor")
 @Composable
-private fun HomeScreenContent(
-    uiState: State<HomeContract.UiState>, onEventDispatcher: (HomeContract.Intent) -> Unit,
+private fun Content(
+  uiState: State<HomeContract.UiState>, onEvent: (HomeContract.Intent) -> Unit,
 ) {
-    var isClickable by remember { mutableStateOf(true) }
-    val openAlertDialog = remember { mutableStateOf(false) }
-    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
-    val skipPartiallyExpanded by rememberSaveable { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = skipPartiallyExpanded)
-    LaunchedEffect(openBottomSheet) {
-        if (openBottomSheet) {
-            coroutineScope.launch {
-                bottomSheetState.show()
-            }
-        } else {
-            coroutineScope.launch {
-                bottomSheetState.hide()
-            }
-        }
-    }
-    val pullRefreshState = rememberPullRefreshState(refreshing = uiState.value.isLoading, onRefresh = { /*onEventDispatcher(HomeContract.Intent.Init)*/ })
-    LaunchedEffect(Unit) {
-        onEventDispatcher(HomeContract.Intent.Init)
-    }
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .pullRefresh(pullRefreshState)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = MainGray), horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(2.dp)
-                    .background(color = Color.White),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "NOTEJON", color = Color.Black, fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_semibold)), modifier = Modifier.padding(20.dp)
-                )
-                Row {
-                    Image(painter = painterResource(id = R.drawable.info), contentDescription = null, modifier = Modifier
-                        .clip(shape = RoundedCornerShape(10.dp))
-                        .clickable {
-                            openAlertDialog.value = true
-                        }
-                        .padding(20.dp))
-                    Image(painter = painterResource(id = R.drawable.add_note), contentDescription = null, modifier = Modifier
-                        .clip(shape = RoundedCornerShape(10.dp))
-                        .clickable {
-                            if (isClickable) {
-                                isClickable = false
-                                coroutineScope.launch {
-                                    onEventDispatcher(HomeContract.Intent.MoveToAdd)
-                                    delay(500)
-                                    isClickable = true
-                                }
-                            }
-                        }
-                        .padding(20.dp))
-                }
-                if (openAlertDialog.value) {
-                    AlertDialogExample(
-                        onDismissRequest = { openAlertDialog.value = false },
-                        onConfirmation = {
-                            openAlertDialog.value = false
-                        },
-                        dialogTitle = "NOTEJON",
-                        dialogText = "I made this application as homework when I was studying at GITA Academy. Here you can save notes. Basic knowledge that was useful to me here: Compose, Hilt, Voyager, Orbit, Room.",
-                        icon = R.drawable.info
-                    )
-                }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = "All", fontFamily = if (uiState.value.isAll) {
-                    FontFamily(Font(R.font.montserrat_medium))
-                } else {
-                    FontFamily(Font(R.font.montserrat_light))
-                }, modifier = Modifier
-                    .weight(1f)
-                    .padding(10.dp)
-                    .border(
-                        1.dp, color = if (uiState.value.isAll) {
-                            Color.Blue
-                        } else {
-                            Color.White
-                        }, shape = RoundedCornerShape(10.dp)
-                    )
-                    .clip(shape = RoundedCornerShape(10.dp))
-                    .background(color = Color.White)
-                    .clickable {
-                        onEventDispatcher(HomeContract.Intent.Init)
-                    }
-                    .padding(10.dp), textAlign = TextAlign.Center)
-                Text(text = "By tags", fontFamily = if (uiState.value.isByTags) {
-                    FontFamily(Font(R.font.montserrat_medium))
-                } else {
-                    FontFamily(Font(R.font.montserrat_light))
-                }, modifier = Modifier
-                    .weight(1f)
-                    .padding(10.dp)
-                    .border(
-                        1.dp, color = if (uiState.value.isByTags) {
-                            Color.Blue
-                        } else {
-                            Color.White
-                        }, shape = RoundedCornerShape(10.dp)
-                    )
-                    .clip(shape = RoundedCornerShape(10.dp))
-                    .background(color = Color.White)
-                    .clickable {
-                        onEventDispatcher(HomeContract.Intent.LoadTags)
-                        openBottomSheet = true
-                    }
-                    .padding(10.dp), textAlign = TextAlign.Center)
-                Text(text = "Favorite", fontFamily = if (uiState.value.isFavorite) {
-                    FontFamily(Font(R.font.montserrat_medium))
-                } else {
-                    FontFamily(Font(R.font.montserrat_light))
-                }, modifier = Modifier
-                    .weight(1f)
-                    .padding(10.dp)
-                    .border(
-                        1.dp, color = if (uiState.value.isFavorite) {
-                            Color.Blue
-                        } else {
-                            Color.White
-                        }, shape = RoundedCornerShape(10.dp)
-                    )
-                    .clip(shape = RoundedCornerShape(10.dp))
-                    .background(color = Color.White)
-                    .clickable {
-                        onEventDispatcher(HomeContract.Intent.LoadFavNotes)
-                    }
-                    .padding(10.dp), textAlign = TextAlign.Center)
-            }
-            if (uiState.value.notes.isEmpty()) {
-                Image(
-                    painter = painterResource(id = R.drawable.empty_notes), contentDescription = null, modifier = Modifier
-                        .weight(1f)
-                        .align(alignment = Alignment.CenterHorizontally)
-                )
-            } else {
-                LazyColumn(modifier = Modifier.weight(1f)) {
-                    itemsIndexed(uiState.value.notes, key = { _, note -> note.id }) { index, item ->
-                        NoteItem(
-                            data = item,
-                            onEventDispatcher = onEventDispatcher,
-                            changeFav = HomeContract.Intent.UpdateFavNote(item.copy(favorite = !item.favorite), index),
-                            modifier = Modifier.animateItem(
-                                fadeOutSpec = tween(1000), placementSpec = spring(stiffness = Spring.StiffnessMediumLow)
-                            )
-                        )
-                    }
-                }
-            }
-        }
-        PullRefreshIndicator(
-            refreshing = uiState.value.isLoading,
-            state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter),
-            backgroundColor = if (uiState.value.isLoading) Color.Red else Color.Green,
-        )
-    }
+  var isClickable by remember { mutableStateOf(true) }
+  val openAlertDialog = remember { mutableStateOf(false) }
+  var openBottomSheet by rememberSaveable { mutableStateOf(false) }
+  val skipPartiallyExpanded by rememberSaveable { mutableStateOf(false) }
+  val coroutineScope = rememberCoroutineScope()
+  val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = skipPartiallyExpanded)
+  LaunchedEffect(openBottomSheet) {
     if (openBottomSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { openBottomSheet = false },
-            sheetState = bottomSheetState,
-        ) {
-            Text(
-                text = "Tags", color = Color.Black, fontSize = 24.sp, fontFamily = FontFamily(Font(R.font.montserrat_semibold)), modifier = Modifier.padding(start = 16.dp, bottom = 16.dp)
-            )
-            if (uiState.value.tags.isNotEmpty()) {
-                LazyColumn {
-                    itemsIndexed(uiState.value.tags) { index, item ->
-                        Row(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 16.dp, end = 16.dp, top = 16.dp, bottom = if (index != uiState.value.tags.size - 1) {
-                                    0.dp
-                                } else {
-                                    64.dp
-                                }
-                            )
-                            .clip(shape = RoundedCornerShape(10.dp))
-                            .background(color = Color.White)
-                            .clickable {
-                                openBottomSheet = false
-                                onEventDispatcher(HomeContract.Intent.LoadNotesByTag(item.name))
-                            }
-                            .padding(10.dp)) {
-                            Text(
-                                text = ("#" + item.name).uppercase(), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                }
-            }
-        }
+      coroutineScope.launch {
+        bottomSheetState.show()
+      }
+    } else {
+      coroutineScope.launch {
+        bottomSheetState.hide()
+      }
     }
-
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(Color.White)
-    systemUiController.setNavigationBarColor(Color.White)
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@SuppressLint("RememberReturnType")
-@Composable
-fun NoteItem(
-    data: NoteData,
-    onEventDispatcher: (HomeContract.Intent) -> Unit,
-    changeFav: HomeContract.Intent,
-    modifier: Modifier,
-) {
-    var isClickable by remember { mutableStateOf(true) }
-    val coroutineScope = rememberCoroutineScope()
-    val trash = remember {
-        mutableStateOf(false)
-    }
-    val expand = remember {
-        mutableStateOf(false)
-    }
-    val defaultModifier = Modifier
-        .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 4.dp)
-        .fillMaxWidth()
-        .clip(shape = RoundedCornerShape(10.dp))
-        .background(color = Color(data.backgroundColor.toULong()))
-        .combinedClickable(onLongClick = {
-            trash.value = true
-        }, onClick = {
-            if (isClickable) {
-                isClickable = false
-                coroutineScope.launch {
-                    onEventDispatcher(HomeContract.Intent.Edit(data = data))
+  }
+  val pullRefreshState = rememberPullRefreshState(refreshing = uiState.value.isLoading,
+    onRefresh = { /*onEventDispatcher(HomeContract.Intent.Init)*/ })
+  LaunchedEffect(Unit) {
+    onEvent(HomeContract.Intent.Init)
+  }
+  Box(
+    modifier = Modifier
+      .fillMaxSize()
+      .pullRefresh(pullRefreshState)
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxSize()
+        .background(color = MainGray), horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .shadow(2.dp)
+          .background(color = Color.White),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Text(
+          text = "NOTEJON",
+          color = Color.Black,
+          fontSize = 24.sp,
+          fontFamily = FontFamily(Font(R.font.montserrat_semibold)),
+          modifier = Modifier.padding(20.dp)
+        )
+        Row {
+          Image(painter = painterResource(id = R.drawable.info),
+            contentDescription = null,
+            modifier = Modifier
+              .clip(shape = RoundedCornerShape(10.dp))
+              .clickable {
+                openAlertDialog.value = true
+              }
+              .padding(20.dp))
+          Image(painter = painterResource(id = R.drawable.add_note),
+            contentDescription = null,
+            modifier = Modifier
+              .clip(shape = RoundedCornerShape(10.dp))
+              .clickable {
+                if (isClickable) {
+                  isClickable = false
+                  coroutineScope.launch {
+                    onEvent(HomeContract.Intent.MoveToAdd)
                     delay(500)
                     isClickable = true
+                  }
                 }
-            }
-        })
-    Column(defaultModifier.then(modifier)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row {
-                Text(
-                    text = data.title, modifier = Modifier.padding(start = 20.dp, top = 8.dp), fontSize = 24.sp
-                )
-                Image(painter = if (data.favorite) {
-                    painterResource(id = R.drawable.favorite_yellow)
-                } else {
-                    painterResource(id = R.drawable.favorite_gray)
-                }, contentDescription = null, modifier = Modifier
-                    .clip(shape = RoundedCornerShape(20.dp))
-                    .clickable {
-                        onEventDispatcher(changeFav)
-                    }
-                    .padding(10.dp))
-            }
-            Row {
-                Image(painter = if (!expand.value) {
-                    painterResource(id = R.drawable.expand)
-                } else {
-                    painterResource(id = R.drawable.minimize)
-                }, contentDescription = null, modifier = Modifier
-                    .clip(shape = RoundedCornerShape(20.dp))
-                    .clickable {
-                        expand.value = !expand.value
-                    }
-                    .padding(10.dp))
-            }
+              }
+              .padding(20.dp))
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp), verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = data.text, color = Color(data.textColor.toULong()), modifier = Modifier.weight(2f), maxLines = if (expand.value) {
-                    data.text.length
-                } else {
-                    3
-                }, overflow = TextOverflow.Ellipsis
-            )
+        if (openAlertDialog.value) {
+          AppInfoDialog(
+            onDismissRequest = { openAlertDialog.value = false },
+            onConfirmation = {
+              openAlertDialog.value = false
+            },
+            dialogTitle = "NOTEJON",
+            dialogText = "I made this application as homework when I was studying at GITA Academy. Here you can save notes. Basic knowledge that was useful to me here: Compose, Hilt, Voyager, Orbit, Room.",
+            icon = R.drawable.info
+          )
         }
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(20.dp)
+      }
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+      ) {
+        Text(text = "All", fontFamily = if (uiState.value.isAll) {
+          FontFamily(Font(R.font.montserrat_medium))
+        } else {
+          FontFamily(Font(R.font.montserrat_light))
+        }, modifier = Modifier
+          .weight(1f)
+          .padding(10.dp)
+          .border(
+            1.dp, color = if (uiState.value.isAll) {
+              Color.Blue
+            } else {
+              Color.White
+            }, shape = RoundedCornerShape(10.dp)
+          )
+          .clip(shape = RoundedCornerShape(10.dp))
+          .background(color = Color.White)
+          .clickable {
+            onEvent(HomeContract.Intent.Init)
+          }
+          .padding(10.dp), textAlign = TextAlign.Center)
+        Text(text = "By tags", fontFamily = if (uiState.value.isByTags) {
+          FontFamily(Font(R.font.montserrat_medium))
+        } else {
+          FontFamily(Font(R.font.montserrat_light))
+        }, modifier = Modifier
+          .weight(1f)
+          .padding(10.dp)
+          .border(
+            1.dp, color = if (uiState.value.isByTags) {
+              Color.Blue
+            } else {
+              Color.White
+            }, shape = RoundedCornerShape(10.dp)
+          )
+          .clip(shape = RoundedCornerShape(10.dp))
+          .background(color = Color.White)
+          .clickable {
+            onEvent(HomeContract.Intent.LoadTags)
+            openBottomSheet = true
+          }
+          .padding(10.dp), textAlign = TextAlign.Center)
+        Text(text = "Favorite", fontFamily = if (uiState.value.isFavorite) {
+          FontFamily(Font(R.font.montserrat_medium))
+        } else {
+          FontFamily(Font(R.font.montserrat_light))
+        }, modifier = Modifier
+          .weight(1f)
+          .padding(10.dp)
+          .border(
+            1.dp, color = if (uiState.value.isFavorite) {
+              Color.Blue
+            } else {
+              Color.White
+            }, shape = RoundedCornerShape(10.dp)
+          )
+          .clip(shape = RoundedCornerShape(10.dp))
+          .background(color = Color.White)
+          .clickable {
+            onEvent(HomeContract.Intent.LoadFavNotes)
+          }
+          .padding(10.dp), textAlign = TextAlign.Center)
+      }
+      if (uiState.value.notes.isEmpty()) {
+        Image(
+          painter = painterResource(id = R.drawable.empty_notes),
+          contentDescription = null,
+          modifier = Modifier
+            .weight(1f)
+            .align(alignment = Alignment.CenterHorizontally)
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = if (data.tag.isNotEmpty()) {
-                    "#" + data.tag.uppercase()
+      } else {
+        LazyColumn(modifier = Modifier.weight(1f)) {
+          itemsIndexed(uiState.value.notes, key = { _, note -> note.id }) { index, item ->
+            NoteItem(
+              data = item,
+              onEventDispatcher = onEvent,
+              changeFav = HomeContract.Intent.UpdateFavNote(item.copy(favorite = !item.favorite), index),
+              modifier = Modifier.animateItem(
+                fadeOutSpec = tween(1000), placementSpec = spring(stiffness = Spring.StiffnessMediumLow)
+              )
+            )
+          }
+        }
+      }
+    }
+    PullRefreshIndicator(
+      refreshing = uiState.value.isLoading,
+      state = pullRefreshState,
+      modifier = Modifier.align(Alignment.TopCenter),
+      backgroundColor = if (uiState.value.isLoading) Color.Red else Color.Green,
+    )
+  }
+  if (openBottomSheet) {
+    ModalBottomSheet(onDismissRequest = { openBottomSheet = false }, sheetState = bottomSheetState) {
+      Text(
+        text = "Tags",
+        color = Color.Black,
+        fontSize = 24.sp,
+        fontFamily = FontFamily(Font(R.font.montserrat_semibold)),
+        modifier = Modifier.padding(start = 16.dp, bottom = 16.dp)
+      )
+      if (uiState.value.tags.isNotEmpty()) {
+        LazyColumn {
+          itemsIndexed(uiState.value.tags) { index, item ->
+            Row(modifier = Modifier
+              .fillMaxWidth()
+              .padding(
+                start = 16.dp, end = 16.dp, top = 16.dp, bottom = if (index != uiState.value.tags.size - 1) {
+                  0.dp
                 } else {
-                    ""
-                }, color = Color.Gray, fontSize = 16.sp, modifier = Modifier.padding(10.dp)
-            )
-            Text(
-                text = data.date.longToDateString(), color = Color.Black, fontSize = 16.sp, modifier = Modifier.padding(10.dp)
-            )
-        }
-    }
-    Row(
-        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (trash.value) {
-            Image(painter = painterResource(id = R.drawable.trash), contentDescription = null, modifier = Modifier
-                .clip(shape = RoundedCornerShape(20.dp))
-                .background(color = Color.White)
-                .clickable {
-                    onEventDispatcher(HomeContract.Intent.DeleteNote(data = data))
+                  64.dp
                 }
-                .padding(vertical = 8.dp, horizontal = 16.dp))
-            Image(painter = painterResource(id = R.drawable.close), contentDescription = null, modifier = Modifier
-                .clip(shape = RoundedCornerShape(10.dp))
-                .clickable {
-                    trash.value = false
-                }
-                .padding(10.dp))
+              )
+              .clip(shape = RoundedCornerShape(10.dp))
+              .background(color = Color.White)
+              .clickable {
+                openBottomSheet = false
+                onEvent(HomeContract.Intent.LoadNotesByTag(item.name))
+              }
+              .padding(10.dp)) {
+              Text(
+                text = ("#" + item.name).uppercase(), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center
+              )
+            }
+          }
         }
+      }
     }
-}
+  }
 
-@Composable
-fun AlertDialogExample(
-    onDismissRequest: () -> Unit,
-    onConfirmation: () -> Unit,
-    dialogTitle: String,
-    dialogText: String,
-    icon: Int,
-) {
-    AlertDialog(icon = {
-        Image(painter = painterResource(id = icon), contentDescription = null)
-    }, title = {
-        Text(text = dialogTitle, fontFamily = FontFamily(Font(R.font.montserrat_semibold)))
-    }, text = {
-        Text(text = dialogText, fontFamily = FontFamily(Font(R.font.montserrat_medium)))
-    }, onDismissRequest = {
-        onDismissRequest()
-    }, confirmButton = {
-        TextButton(onClick = {
-            onConfirmation()
-        }) {
-            Text("OK")
-        }
-    })
+  val systemUiController = rememberSystemUiController()
+  systemUiController.setStatusBarColor(Color.White)
+  systemUiController.setNavigationBarColor(Color.White)
 }

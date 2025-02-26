@@ -4,12 +4,11 @@ import kotlinx.coroutines.Job
 import org.orbitmvi.orbit.ContainerHost
 import uz.gita.otabek.notejon.data.model.NoteData
 import uz.gita.otabek.notejon.data.model.TagData
-import uz.gita.otabek.notejon.screens.note.NoteContract.Intent
 
 interface HomeContract {
 
     interface ViewModel : ContainerHost<UiState, SideEffect> {
-        fun onEventDispatcher(intent: Intent)
+        fun onEvent(intent: Intent): Job
     }
 
     data class UiState(
