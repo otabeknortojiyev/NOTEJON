@@ -1,6 +1,6 @@
 # Note App
 
-Save your notes easyli and fast in different colors) :)
+Save your notes easyli and fast, customize notes :)
 
 
 ## 📸 Скриншоты
