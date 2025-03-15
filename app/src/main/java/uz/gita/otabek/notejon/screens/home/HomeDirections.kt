@@ -6,11 +6,7 @@ import uz.gita.otabek.notejon.ui.navigation.AppNavigator
 import javax.inject.Inject
 
 class HomeDirections @Inject constructor(private val navigator: AppNavigator) : HomeContract.Direction {
-    override suspend fun moveToAdd() {
-        navigator.push(NoteScreen())
-    }
-
-    override suspend fun moveToEdit(data: NoteData) {
-        navigator.push(NoteScreen(data))
-    }
+  override suspend fun moveToAdd(data: NoteData?) {
+    navigator.push(NoteScreen(data = data))
+  }
 }

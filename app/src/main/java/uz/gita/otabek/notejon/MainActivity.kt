@@ -17,24 +17,24 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    @Inject
-    lateinit var navigationHandler: NavigationHandler
+  @Inject
+  lateinit var navigationHandler: NavigationHandler
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            NOTEJONTheme {
-                Navigator(screen = HomeScreen(), onBackPressed = {
-                    true
-                }) { navigator ->
-                    LaunchedEffect(key1 = navigator) {
-                        navigationHandler.screenState.onEach {
-                            it.invoke(navigator)
-                        }.launchIn(lifecycleScope)
-                    }
-                    SlideTransition(navigator = navigator)
-                }
-            }
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContent {
+      NOTEJONTheme {
+        Navigator(screen = HomeScreen(), onBackPressed = {
+          true
+        }) { navigator ->
+          LaunchedEffect(key1 = navigator) {
+            navigationHandler.screenState.onEach {
+              it.invoke(navigator)
+            }.launchIn(lifecycleScope)
+          }
+          SlideTransition(navigator = navigator)
         }
+      }
     }
+  }
 }

@@ -12,6 +12,6 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 interface RepositoryModule {
 
-    @[Binds Singleton]
-    fun bindRepository(impl: NoteRepositoryImpl): NoteRepository
+  @[Binds Singleton]
+  fun bindRepository(impl: NoteRepositoryImpl): NoteRepository
 }

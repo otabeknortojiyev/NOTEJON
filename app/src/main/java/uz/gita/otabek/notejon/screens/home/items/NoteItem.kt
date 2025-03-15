@@ -11,16 +11,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,8 +27,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import uz.gita.otabek.notejon.R
 import uz.gita.otabek.notejon.data.model.NoteData
 import uz.gita.otabek.notejon.screens.home.HomeContract
@@ -41,78 +37,58 @@ import uz.gita.otabek.notejon.utils.longToDateString
 @Composable
 fun NoteItem(
   data: NoteData,
-  onEventDispatcher: (HomeContract.Intent) -> Unit,
-  changeFav: HomeContract.Intent,
+  onEvent: (HomeContract.Intent) -> Unit,
   modifier: Modifier,
 ) {
-  var isClickable by remember { mutableStateOf(true) }
-  val coroutineScope = rememberCoroutineScope()
-  val trash = remember {
-    mutableStateOf(false)
-  }
-  val expand = remember {
-    mutableStateOf(false)
-  }
+  val isClickable = remember { mutableStateOf(true) }
+  val trash = remember { mutableStateOf(false) }
+  val expand = remember { mutableStateOf(false) }
   val defaultModifier = Modifier
-    .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 4.dp)
+    .padding(horizontal = 16.dp)
     .fillMaxWidth()
-    .clip(shape = RoundedCornerShape(10.dp))
+    .clip(shape = RoundedCornerShape(12.dp))
     .background(color = Color(data.backgroundColor.toULong()))
     .combinedClickable(onLongClick = {
       trash.value = true
     }, onClick = {
-      if (isClickable) {
-        isClickable = false
-        coroutineScope.launch {
-          onEventDispatcher(HomeContract.Intent.Edit(data = data))
-          delay(500)
-          isClickable = true
-        }
+      if (isClickable.value) {
+        isClickable.value = false
+        onEvent(HomeContract.Intent.MoveToAdd(data = data))
       }
     })
   Column(defaultModifier.then(modifier)) {
     Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically
+      modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
     ) {
-      Row {
-        Text(
-          text = data.title, modifier = Modifier.padding(start = 20.dp, top = 8.dp), fontSize = 24.sp
-        )
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(text = data.title, fontSize = 24.sp, modifier = Modifier.padding(start = 20.dp))
         Image(painter = if (data.favorite) {
           painterResource(id = R.drawable.favorite_yellow)
         } else {
           painterResource(id = R.drawable.favorite_gray)
         }, contentDescription = null, modifier = Modifier
-          .clip(shape = RoundedCornerShape(20.dp))
+          .clip(shape = CircleShape)
           .clickable {
-            onEventDispatcher(changeFav)
+            onEvent(HomeContract.Intent.UpdateFavNote(data.copy(favorite = !data.favorite)))
           }
           .padding(10.dp))
       }
-      Row {
-        Image(painter = if (!expand.value) {
-          painterResource(id = R.drawable.expand)
-        } else {
-          painterResource(id = R.drawable.minimize)
-        }, contentDescription = null, modifier = Modifier
-          .clip(shape = RoundedCornerShape(20.dp))
-          .clickable {
-            expand.value = !expand.value
-          }
-          .padding(10.dp))
+      Spacer(modifier = Modifier.weight(1f))
+      IconButton(onClick = { expand.value = !expand.value }) {
+        Image(
+          painter = if (!expand.value) {
+            painterResource(id = R.drawable.expand)
+          } else {
+            painterResource(id = R.drawable.minimize)
+          }, contentDescription = null
+        )
       }
     }
-    Row(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(start = 10.dp), verticalAlignment = Alignment.CenterVertically
-    ) {
+    Row(modifier = Modifier.fillMaxWidth()) {
       Text(
+        modifier = Modifier.padding(start = 12.dp),
         text = data.text,
         color = Color(data.textColor.toULong()),
-        modifier = Modifier.weight(2f),
         maxLines = if (expand.value) {
           data.text.length
         } else {
@@ -121,25 +97,16 @@ fun NoteItem(
         overflow = TextOverflow.Ellipsis
       )
     }
-    Spacer(
-      modifier = Modifier
-        .fillMaxWidth()
-        .height(20.dp)
-    )
     Row(
       modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.SpaceBetween,
+      horizontalArrangement = Arrangement.End,
       verticalAlignment = Alignment.CenterVertically
     ) {
       Text(
-        text = if (data.tag.isNotEmpty()) {
-          "#" + data.tag.uppercase()
-        } else {
-          ""
-        }, color = Color.Gray, fontSize = 16.sp, modifier = Modifier.padding(10.dp)
-      )
-      Text(
-        text = data.date.longToDateString(), color = Color.Black, fontSize = 16.sp, modifier = Modifier.padding(10.dp)
+        text = data.date.longToDateString(),
+        color = Color.Black,
+        fontSize = 16.sp,
+        modifier = Modifier.padding(end = 10.dp)
       )
     }
   }
@@ -149,23 +116,18 @@ fun NoteItem(
     verticalAlignment = Alignment.CenterVertically
   ) {
     if (trash.value) {
-      Image(painter = painterResource(id = R.drawable.trash),
-        contentDescription = null,
-        modifier = Modifier
-          .clip(shape = RoundedCornerShape(20.dp))
-          .background(color = Color.White)
-          .clickable {
-            onEventDispatcher(HomeContract.Intent.DeleteNote(data = data))
-          }
-          .padding(vertical = 8.dp, horizontal = 16.dp))
-      Image(painter = painterResource(id = R.drawable.close),
-        contentDescription = null,
-        modifier = Modifier
-          .clip(shape = RoundedCornerShape(10.dp))
-          .clickable {
-            trash.value = false
-          }
-          .padding(10.dp))
+      IconButton(onClick = { onEvent(HomeContract.Intent.DeleteNote(data = data)) }) {
+        Image(
+          painter = painterResource(
+            id = R.drawable.trash
+          ), contentDescription = null
+        )
+      }
+      IconButton(onClick = { trash.value = false }) {
+        Image(
+          painter = painterResource(id = R.drawable.close), contentDescription = null
+        )
+      }
     }
   }
 }

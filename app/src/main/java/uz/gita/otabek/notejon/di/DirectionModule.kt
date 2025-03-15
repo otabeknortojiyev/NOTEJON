@@ -13,10 +13,9 @@ import uz.gita.otabek.notejon.screens.note.NoteDirections
 @Module
 @InstallIn(ViewModelComponent::class)
 interface DirectionModule {
+  @[Binds ViewModelScoped]
+  fun bindHomeDirection(impl: HomeDirections): HomeContract.Direction
 
-    @[Binds ViewModelScoped]
-    fun bindHomeDirection(impl: HomeDirections): HomeContract.Direction
-
-    @[Binds ViewModelScoped]
-    fun bindNoteDirection(impl: NoteDirections): NoteContract.Direction
+  @[Binds ViewModelScoped]
+  fun bindNoteDirection(impl: NoteDirections): NoteContract.Direction
 }

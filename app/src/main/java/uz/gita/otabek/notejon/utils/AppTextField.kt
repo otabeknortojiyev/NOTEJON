@@ -32,63 +32,65 @@ import uz.gita.otabek.notejon.R
 
 @Composable
 fun AppTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    readOnly: Boolean = false,
-    textStyle: TextStyle,
-    keyboardOptions: KeyboardOptions,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
-    hint: String = "",
-    singleLine: Boolean,
-    textAlign: TextAlign = TextAlign.Start,
-    errorText: String? = null,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null,
-    colors: TextFieldColors = TextFieldDefaults.textFieldColors()
+  value: String,
+  onValueChange: (String) -> Unit,
+  modifier: Modifier = Modifier,
+  enabled: Boolean = true,
+  readOnly: Boolean = false,
+  textStyle: TextStyle,
+  keyboardOptions: KeyboardOptions,
+  keyboardActions: KeyboardActions = KeyboardActions.Default,
+  visualTransformation: VisualTransformation = VisualTransformation.None,
+  hint: String = "",
+  singleLine: Boolean,
+  textAlign: TextAlign = TextAlign.Start,
+  errorText: String? = null,
+  leadingIcon: @Composable (() -> Unit)? = null,
+  trailingIcon: @Composable (() -> Unit)? = null,
+  colors: TextFieldColors = TextFieldDefaults.textFieldColors()
 ) {
-    BasicTextField(value = value,
-        onValueChange = onValueChange,
-        modifier = modifier,
-        enabled = enabled,
-        readOnly = readOnly,
-        singleLine = singleLine,
-        textStyle = textStyle.copy(textAlign = textAlign),
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        visualTransformation = visualTransformation,
-        cursorBrush = SolidColor(Color.DarkGray),
-        decorationBox = { innerTextField ->
-            Column {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(color = colors.backgroundColor(enabled = true).value, shape = RoundedCornerShape(10.dp))
-                        .padding(horizontal = 10.dp)
-                        .defaultMinSize(minHeight = 50.dp), verticalAlignment = Alignment.CenterVertically
-                ) {
-                    leadingIcon?.invoke()
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        if (value.isEmpty()) {
-                            Text(
-                                text = hint, modifier = Modifier.fillMaxWidth(), style = textStyle.copy(color = Color.Gray)
-                            )
-                        }
-                        innerTextField()
-                    }
-                    trailingIcon?.invoke()
-                }
-
-                errorText?.let {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = errorText, style = TextStyle(
-                            fontFamily = FontFamily(Font(R.font.montserrat_regular)), fontWeight = FontWeight.Medium, color = Color.Red
-                        ), modifier = Modifier.padding(start = 16.dp), maxLines = 1
-                    )
-                }
+  BasicTextField(value = value,
+    onValueChange = onValueChange,
+    modifier = modifier,
+    enabled = enabled,
+    readOnly = readOnly,
+    singleLine = singleLine,
+    textStyle = textStyle.copy(textAlign = textAlign),
+    keyboardOptions = keyboardOptions,
+    keyboardActions = keyboardActions,
+    visualTransformation = visualTransformation,
+    cursorBrush = SolidColor(Color.DarkGray),
+    decorationBox = { innerTextField ->
+      Column {
+        Row(
+          modifier = Modifier
+              .fillMaxWidth()
+              .background(color = colors.backgroundColor(enabled = true).value, shape = RoundedCornerShape(10.dp))
+              .padding(horizontal = 10.dp)
+              .defaultMinSize(minHeight = 50.dp), verticalAlignment = Alignment.CenterVertically
+        ) {
+          leadingIcon?.invoke()
+          Box(modifier = Modifier.fillMaxWidth()) {
+            if (value.isEmpty()) {
+              Text(
+                text = hint, modifier = Modifier.fillMaxWidth(), style = textStyle.copy(color = Color.Gray)
+              )
             }
-        })
+            innerTextField()
+          }
+          trailingIcon?.invoke()
+        }
+
+        errorText?.let {
+          Spacer(modifier = Modifier.height(8.dp))
+          Text(
+            text = errorText, style = TextStyle(
+              fontFamily = FontFamily(Font(R.font.montserrat_regular)),
+              fontWeight = FontWeight.Medium,
+              color = Color.Red
+            ), modifier = Modifier.padding(start = 16.dp), maxLines = 1
+          )
+        }
+      }
+    })
 }

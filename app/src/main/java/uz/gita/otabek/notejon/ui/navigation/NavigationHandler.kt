@@ -6,5 +6,5 @@ import kotlinx.coroutines.flow.SharedFlow
 typealias NavigationArgs = Navigator.() -> Unit
 
 interface NavigationHandler {
-    val screenState: SharedFlow<NavigationArgs>
+  val screenState: SharedFlow<NavigationArgs>
 }

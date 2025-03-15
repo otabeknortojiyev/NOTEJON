@@ -11,9 +11,9 @@ import uz.gita.otabek.notejon.ui.navigation.NavigationHandler
 @Module
 @InstallIn(SingletonComponent::class)
 interface NavigationModule {
-    @Binds
-    fun bindAppNavigator(dispatcher: AppNavigationDispatcher): AppNavigator
+  @Binds
+  fun bindAppNavigator(dispatcher: AppNavigationDispatcher): AppNavigator
 
-    @Binds
-    fun bindNavigationHandler(dispatcher: AppNavigationDispatcher): NavigationHandler
+  @Binds
+  fun bindNavigationHandler(dispatcher: AppNavigationDispatcher): NavigationHandler
 }
